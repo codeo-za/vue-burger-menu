@@ -4,9 +4,9 @@
             <nav class="bm-item-list">
                 <slot></slot>
             </nav>
-            <span class="bm-cross-button cross-style" :class="{ hidden: !crossIcon }">
-                <span class="bm-cross" :style="{ position: 'absolute', width: '3px', height: '14px',transform: 'rotate(-45deg)'}"></span>
-                <span class="bm-cross" :style="{ position: 'absolute', width: '3px', height: '14px',transform: 'rotate(45deg)'}"></span>
+            <span ref="bmCrossButton" class="bm-cross-button cross-style" :class="{ hidden: !crossIcon }">
+                <span class="bm-cross" :style="{ position: 'absolute', width: '3px', height: '14px', transform: 'rotate(-45deg)'}"></span>
+                <span class="bm-cross" :style="{ position: 'absolute', width: '3px', height: '14px', transform: 'rotate(45deg)'}"></span>
             </span>
         </div>
 
@@ -138,12 +138,6 @@
           ) {
             this.closeMenu();
           }
-        },
-        getBurgerButton(){
-          return document.querySelector('.bm-burger-button');
-        },
-        getCloseButton(){
-          return document.querySelector('.bm-cross-button');
         }
       },
       mounted() {
@@ -151,12 +145,13 @@
           document.addEventListener('keyup', this.closeMenuOnEsc);
         }
 
-        const burgerButton = this.getBurgerButton();
-        const closeButton = this.getCloseButton();
+        const burgerButton = this.$refs.bmBurgerButton;
         burgerButton.addEventListener('touchstart', this.openMenu);
         burgerButton.addEventListener('click', this.openMenu);
-        closeButton.addEventListener('click', this.closeMenu);
-        closeButton.addEventListener('touchstart', this.closeMenu);
+
+        const crossButton = this.$refs.bmCrossButton;
+        crossButton.addEventListener('click', this.closeMenu);
+        crossButton.addEventListener('touchstart', this.closeMenu);
 
       },
       created: function() {
@@ -165,12 +160,14 @@
       destroyed: function() {
         document.removeEventListener('keyup', this.closeMenuOnEsc);
         document.removeEventListener('click', this.documentClick);
-        const burgerButton = this.getBurgerButton();
-        const closeButton = this.getCloseButton();
+
+        const burgerButton = this.$refs.bmBurgerButton;
         burgerButton.removeEventListener('touchstart', this.openMenu);
         burgerButton.removeEventListener('click', this.openMenu);
-        closeButton.removeEventListener('click', this.closeMenu);
-        closeButton.removeEventListener('touchstart', this.closeMenu);
+
+        const crossButton = this.$refs.bmCrossButton;
+        crossButton.removeEventListener('click', this.closeMenu);
+        crossButton.removeEventListener('touchstart', this.closeMenu);
       },
       watch: {
         isOpen: {
@@ -191,32 +188,31 @@
           deep: true,
           immediate: true,
           handler(oldValue, newValue) {
+            var burgerButton = this.$refs.bmBurgerButton;
+            var burgerMenu = this.$refs.sideNav;
+            var crossButton = this.$refs.bmCrossButton;
+            if (!burgerButton || !burgerMenu || !crossButton) {
+              // component is not fully-formed
+              return;
+            }
             if (oldValue) {
               this.$nextTick(() => {
-                this.$refs.bmBurgerButton.style.left = 'auto';
-                this.$refs.bmBurgerButton.style.right = '36px';
-                this.$refs.sideNav.style.left = 'auto';
-                this.$refs.sideNav.style.right = '0px';
-                var burgerButton = this.getBurgerButton();
-                burgerButton.style.left = 'auto';
-                burgerButton.style.right = '36px';
-                var burgerMenu = document.querySelector('.bm-menu')
                 burgerMenu.style.left = 'auto';
                 burgerMenu.style.right = '0px';
-                document.querySelector('.cross-style').style.right='250px';
+
+                burgerButton.style.left = 'auto';
+                burgerButton.style.right = '36px';
+
+                crossButton.style.right = '250px';
               });
             }
             if (newValue) {
               if (
-                this.$refs.bmBurgerButton.hasAttribute('style')
+                burgerButton.hasAttribute('style')
               ) {
-                this.$refs.bmBurgerButton.removeAttribute('style');
-                this.$refs.sideNav.style.right = 'auto';
-                document
-                  .querySelector('.bm-burger-button')
-                  .removeAttribute('style');
-                document.getElementById('sideNav').style.right = 'auto';
-                document.querySelector('.cross-style').style.right='0px';
+                burgerButton.removeAttribute('style');
+                burgerMenu.style.right = 'auto';
+                crossButton.style.right='0px';
               }
             }
           }
@@ -259,8 +255,12 @@
       background: #bdc3c7;
     }
     .bm-cross-button {
-      height: 24px;
-      width: 24px;
+      height: 36px;
+      width: 36px;
+      padding-left: 16px;
+      padding-top: 8px;
+      margin-top: -8px;
+      margin-right: 8px;
     }
     .bm-cross-button.hidden {
       display: none;
